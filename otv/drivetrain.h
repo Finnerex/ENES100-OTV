@@ -62,7 +62,10 @@ class Drivetrain {
     
      Enes100.mission(LOCATION, 'A'); //This is how you should send the location of the mission site that contains a plantable substrate.
 
+    position.x = x;
+    position.y = y;
     updateDistance();
+    
 
     if(obstacleDetected)
       changeDirection();
