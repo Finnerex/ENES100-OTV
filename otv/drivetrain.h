@@ -19,6 +19,17 @@ class Drivetrain {
   
   Vector2 position;
   float rotation;
+  bool obstacleDetected;
+  //Ultrasonic Range Finder pin defines + variables
+  const int trigPin = 10;
+  const int echoPin = 9;
+  long ultraDuration;
+  int ultraDistance;
+  #define ULTRA_DISTANCE_WARNING 2
+
+  #define MOVE_FORWARD_VALUE 0.0010
+  #define MOVE_LEFT_VALUE 0.0010
+  #define MOVE_RIGHT_VALUE 0.0010
 
   public:
     float speed;
@@ -28,6 +39,91 @@ class Drivetrain {
 
   void updateTransform() {
     // set position & rotation from wifi module / vision system
+    float x, y, t; bool v; // Declare variables to hold the data
+    //Enes100.getX will make sure you get the latest data available to you about your OTV's location.
+    //The first time getX is called, X, Y, theta and visibility are queried and cached.
+    //Subsequent calls return from the cache, so there is no performance gain to saving the function response to a variable.
+
+    x = Enes100.getX();  // Your X coordinate! 0-4, in meters, -1 if no aruco is not visibility (but you should use Enes100.isVisible to check that instead)
+    y = Enes100.getY();  // Your Y coordinate! 0-2, in meters, also -1 if your aruco is not visible.
+    t = Enes100.getTheta();  //Your theta! -pi to +pi, in radians, -1 if your aruco is not visible.
+    v = Enes100.isVisible(); // Is your aruco visible? True or False.
+
+    if (v) // If the ArUco marker is visible
+    {
+        Enes100.print(x); // print out the location
+        Enes100.print(",");
+        Enes100.print(y);
+        Enes100.print(",");
+        Enes100.println(t);
+    }
+    else { // otherwise
+        Enes100.println("Not visible"); // print not visible
+    }
+    
+     Enes100.mission(LOCATION, 'A'); //This is how you should send the location of the mission site that contains a plantable substrate.
+
+    updateDistance();
+
+    if(obstacleDetected){
+      changeDirection();
+    }
+    else{
+      Vector2 forwardDirection = {x + 0.0010, y};
+      localMove(forwardDirection)
+    }
+
+    delay(1000);
+  }
+
+  void updateDistance(){
+    // Clears the trigPin
+    digitalWrite(trigPin, LOW);
+    delayMicroseconds(2);
+    // Sets the trigPin on HIGH state for 10 micro seconds
+    digitalWrite(trigPin, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(trigPin, LOW);
+    // Reads the echoPin, returns the sound wave travel time in microseconds
+    ultraDuration = pulseIn(echoPin, HIGH);
+    // Calculating the distance
+    ultraDistance = ultraDuration * 0.034 / 2;
+    // Prints the distance on the Serial Monitor
+    Serial.print("Distance: ");
+    Serial.println(ultraDistance);
+  }
+
+  void isObstacleDetected(){
+    if(ultraDistance > ULTRA_DISTANCE_WARNING){
+      obstacleDetected = true;
+    }
+    else{
+      obstacleDetected = false;
+    }
+  }
+
+  void changeDirection(){
+    float nextX = x;
+    float nextY = y;
+    Vector2 nextPosition;
+    if(y > 0.0625 && obstacleDetected){
+      nextY -= MOVE_LEFT_VALUE;
+      isObstacleDetected();
+      nextPosition = (Vector2){nextX, nextY};
+      localMove(nextPosition);
+    }
+    else if(y < 1.9375 && obstacleDetected){
+      nextY += MOVE_RIGHT_VALUE;
+      isObstacleDetected();
+      nextPosition = (Vector2){nextX, nextY};
+      localMove(nextPosition);
+    }
+    else{
+      nextX -= MOVE_FORWARD_VALUE;
+      nextPosition = (Vector2){nextX, nextY};
+      localMove(nextPosition);
+      changeDirection();
+    }
   }
 
   void localMove(Vector2 direction) { // call stop() to stop this guy
