@@ -60,21 +60,22 @@ class Drivetrain {
     else // otherwise
         Enes100.println("Not visible"); // print not visible
     
-     Enes100.mission(LOCATION, 'A'); //This is how you should send the location of the mission site that contains a plantable substrate.
+    //Enes100.mission(LOCATION, 'A'); //This is how you should send the location of the mission site that contains a plantable substrate.
 
     position.x = x;
     position.y = y;
-    updateDistance();
+
+    // updateDistance();
     
 
-    if(obstacleDetected)
-      changeDirection();
-    else {
-      Vector2 forwardDirection = {x + 0.0010, y};
-      localMove(forwardDirection);
-    }
+    // if(obstacleDetected)
+    //   changeDirection();
+    // else {
+    //   Vector2 forwardDirection = {x + 0.0010, y};
+    //   localMove(forwardDirection);
+    // }
 
-    delay(1000);
+    // delay(1000);
   }
 
   void updateDistance(){
