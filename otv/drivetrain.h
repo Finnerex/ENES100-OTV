@@ -1,3 +1,5 @@
+#include <Math.h>
+#include "Arduino.h"
 #ifndef DRIVETRAIN_H
 #define DRIVETRAIN_H
 
@@ -28,8 +30,10 @@ class Drivetrain {
     // set position & rotation from wifi module / vision system
   }
 
-  void localMove(Vector2 direction/*, time or distance (or distance taken from first param)*/) {
-    // i would have to check if this is a global or local based direction
+  void localMove(Vector2 direction) { // call stop() to stop this guy
+  
+    direction = direction.normalized();
+
     float m1Speed = direction.x * speed;
     float m2Speed = (-direction.x * 0.5f + 0.866f * direction.y) * speed; 
     float m3Speed = (-direction.x * 0.5f - 0.866f * direction.y) * speed;
@@ -42,11 +46,13 @@ class Drivetrain {
     analogWrite(MOTOR_2_PWM_PIN, fabsf(m2Speed) * 255);
     analogWrite(MOTOR_3_PWM_PIN, fabsf(m3Speed) * 255);
 
-    // wait time / distance
+  }
 
-    stop();
-
-  } // probably have overloads for angle instead of direction and for like localMove also move to position
+  void globalMove(Vector2 direction) {
+    // transform direction to otv local space
+    direction = direction.rotatedBy(-rotation);
+    localMove(direction);
+  }
 
   void stop() {
     analogWrite(MOTOR_1_PWM_PIN, 0);
@@ -54,14 +60,49 @@ class Drivetrain {
     analogWrite(MOTOR_3_PWM_PIN, 0);
   }
 
-  void localMoveUntil(Vector2 direction, bool* predicate(void)) { // probably completely unnecessary
-    while (!predicate()) {
-      localMove(direction);
-    }
+  void rotate(bool reverse) { // again, call stop here to stop it
+
+    digitalWrite(MOTOR_1_DIR_PIN, reverse ? HIGH : LOW);
+    digitalWrite(MOTOR_2_DIR_PIN, reverse ? HIGH : LOW);
+    digitalWrite(MOTOR_3_DIR_PIN, reverse ? HIGH : LOW);
+
+    analogWrite(MOTOR_2_PWM_PIN, speed * 255);
+    analogWrite(MOTOR_2_PWM_PIN, speed * 255);
+    analogWrite(MOTOR_3_PWM_PIN, speed * 255);
+
   }
 
-  void moveTo(Vector2 position) {
+  #define CLOSE_ENOUGH_POLL_MS 20
 
+  void moveTo(Vector2 position) {
+    globalMove(position - this->position);
+
+    while (!closeEnough(position))
+      delay(CLOSE_ENOUGH_POLL_MS);
+    
+    stop();
+
+  }
+
+  void rotateTo(float angle) {
+    rotate(normalizeAngle(rotation - angle) < (float) M_PI);
+
+    while (!closeEnough(angle))
+      delay(CLOSE_ENOUGH_POLL_MS);
+
+    stop();
+  }
+
+  #define CLOSE_ENOUGH_SQR_DIST 4
+  #define CLOSE_ENOUGH_ANGLE (float) M_PI / 32;
+
+  private:
+  bool closeEnough(Vector2 position) {
+    return (position - this->position).sqrMagnitude() <= CLOSE_ENOUGH_SQR_DIST;
+  }
+
+  bool closeEnough(float angle) {
+    return normalizeAngle(rotation - angle) <= CLOSE_ENOUGH_ANGLE;
   }
 
 };
