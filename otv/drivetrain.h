@@ -1,10 +1,9 @@
-#include <Math.h>
-#include "Arduino.h"
 #ifndef DRIVETRAIN_H
 #define DRIVETRAIN_H
 
 #include <math.h>
 #include "util.h"
+#include "Enes100.h"
 
 // Motor pin defines
 #define MOTOR_1_PWM_PIN 3
@@ -63,6 +62,7 @@ class Drivetrain {
     
      Enes100.mission(LOCATION, 'A'); //This is how you should send the location of the mission site that contains a plantable substrate.
 
+    position = {x, y};
     updateDistance();
 
     if(obstacleDetected){
@@ -70,7 +70,7 @@ class Drivetrain {
     }
     else{
       Vector2 forwardDirection = {x + 0.0010, y};
-      localMove(forwardDirection)
+      localMove(forwardDirection);
     }
 
     delay(1000);
@@ -103,16 +103,16 @@ class Drivetrain {
   }
 
   void changeDirection(){
-    float nextX = x;
-    float nextY = y;
+    float nextX = position.x;
+    float nextY = position.y;
     Vector2 nextPosition;
-    if(y > 0.0625 && obstacleDetected){
+    if(position.y > 0.0625 && obstacleDetected){
       nextY -= MOVE_LEFT_VALUE;
       isObstacleDetected();
       nextPosition = (Vector2){nextX, nextY};
       localMove(nextPosition);
     }
-    else if(y < 1.9375 && obstacleDetected){
+    else if(position.y < 1.9375 && obstacleDetected){
       nextY += MOVE_RIGHT_VALUE;
       isObstacleDetected();
       nextPosition = (Vector2){nextX, nextY};
