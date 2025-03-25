@@ -1,3 +1,5 @@
+#include <Math.h>
+#include "Arduino.h"
 #ifndef DRIVETRAIN_H
 #define DRIVETRAIN_H
 
@@ -95,20 +97,20 @@ class Drivetrain {
       obstacleDetected = true;
     else
       obstacleDetected = false;
-    
+
   }
 
   void changeDirection(){
-    float nextX = x;
-    float nextY = y;
+    float nextX = position.x;
+    float nextY = position.y;
     Vector2 nextPosition;
-    if(y > 0.0625 && obstacleDetected){
+    if(position.y > 0.0625 && obstacleDetected){
       nextY -= MOVE_LEFT_VALUE;
       isObstacleDetected();
       nextPosition = (Vector2){nextX, nextY};
       localMove(nextPosition);
-
-    } else if (y < 1.9375 && obstacleDetected) {
+      
+    } else if(position.y < 1.9375 && obstacleDetected){
       nextY += MOVE_RIGHT_VALUE;
       isObstacleDetected();
       nextPosition = (Vector2){nextX, nextY};
