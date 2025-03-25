@@ -1,10 +1,9 @@
-#include <Math.h>
-#include "Arduino.h"
 #ifndef DRIVETRAIN_H
 #define DRIVETRAIN_H
 
 #include <math.h>
 #include "util.h"
+#include "Enes100.h"
 
 // Motor pin defines
 #define MOTOR_1_PWM_PIN 3
@@ -49,28 +48,25 @@ class Drivetrain {
     t = Enes100.getTheta();  //Your theta! -pi to +pi, in radians, -1 if your aruco is not visible.
     v = Enes100.isVisible(); // Is your aruco visible? True or False.
 
-    if (v) // If the ArUco marker is visible
-    {
+    if (v) { // If the ArUco marker is visible
         Enes100.print(x); // print out the location
         Enes100.print(",");
         Enes100.print(y);
         Enes100.print(",");
         Enes100.println(t);
     }
-    else { // otherwise
+    else // otherwise
         Enes100.println("Not visible"); // print not visible
-    }
     
      Enes100.mission(LOCATION, 'A'); //This is how you should send the location of the mission site that contains a plantable substrate.
 
     updateDistance();
 
-    if(obstacleDetected){
+    if(obstacleDetected)
       changeDirection();
-    }
-    else{
+    else {
       Vector2 forwardDirection = {x + 0.0010, y};
-      localMove(forwardDirection)
+      localMove(forwardDirection);
     }
 
     delay(1000);
@@ -94,12 +90,12 @@ class Drivetrain {
   }
 
   void isObstacleDetected(){
-    if(ultraDistance > ULTRA_DISTANCE_WARNING){
+
+    if(ultraDistance > ULTRA_DISTANCE_WARNING)
       obstacleDetected = true;
-    }
-    else{
+    else
       obstacleDetected = false;
-    }
+    
   }
 
   void changeDirection(){
@@ -111,14 +107,14 @@ class Drivetrain {
       isObstacleDetected();
       nextPosition = (Vector2){nextX, nextY};
       localMove(nextPosition);
-    }
-    else if(y < 1.9375 && obstacleDetected){
+
+    } else if (y < 1.9375 && obstacleDetected) {
       nextY += MOVE_RIGHT_VALUE;
       isObstacleDetected();
       nextPosition = (Vector2){nextX, nextY};
       localMove(nextPosition);
-    }
-    else{
+      
+    } else {
       nextX -= MOVE_FORWARD_VALUE;
       nextPosition = (Vector2){nextX, nextY};
       localMove(nextPosition);
