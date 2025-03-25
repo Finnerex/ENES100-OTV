@@ -1,6 +1,7 @@
 #include <math.h>
 #include "drivetrain.h"
 #include "util.h"
+#include "Enes100.h"
 
 // Testing based constant parameters
 #define NUM_OBSTACLE_POSITIONS 6
@@ -25,7 +26,16 @@ State state = MIS_APPROACH;
 
 void setup() {
   otv.speed = 0.2f; // for testing, lower total speed
+
+  // Initialize Aruco Wifi
+  // Initialize Enes100 Library
+  // Team Name, Mission Type, Marker ID, Room Number, Wifi Module TX Pin, Wifi Module RX Pin
+  Enes100.begin("Teem Slyde", SEED, 205, 1116, A0, A1);
+  // At this point we know we are connected.
+  Enes100.println("Connected...");
 }
+
+bool sent = false;
 
 void loop() {
   otv.updateTransform();
