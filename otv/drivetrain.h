@@ -14,14 +14,14 @@
 #define MOTOR_2_DIR_PIN 1
 #define MOTOR_3_DIR_PIN 2
 
+#define ULTRA_TRIGGER_PIN 10
+#define ULTRA_ECHO_PIN 9
+
 class Drivetrain {
   
-  bool obstacleDetected;
   //Ultrasonic Range Finder pin defines + variables
-  const int trigPin = 10;
-  const int echoPin = 9;
   long ultraDuration;
-  int ultraDistance;
+
   #define ULTRA_DISTANCE_WARNING 2
 
   #define MOVE_FORWARD_VALUE 0.0010
@@ -48,45 +48,40 @@ class Drivetrain {
     return Enes100.getTheta();
   }
 
-  void updateDistance(){
+  float GetUltraDistance() {
     // Clears the trigPin
-    digitalWrite(trigPin, LOW);
+    digitalWrite(ULTRA_TRIGGER_PIN, LOW);
     delayMicroseconds(2);
     // Sets the trigPin on HIGH state for 10 micro seconds
-    digitalWrite(trigPin, HIGH);
+    digitalWrite(ULTRA_TRIGGER_PIN, HIGH);
     delayMicroseconds(10);
-    digitalWrite(trigPin, LOW);
+    digitalWrite(ULTRA_TRIGGER_PIN, LOW);
     // Reads the echoPin, returns the sound wave travel time in microseconds
-    ultraDuration = pulseIn(echoPin, HIGH);
+    ultraDuration = pulseIn(ULTRA_ECHO_PIN, HIGH);
     // Calculating the distance
-    ultraDistance = ultraDuration * 0.034 / 2;
+    return ultraDuration * 0.034 / 2;
     // Prints the distance on the Serial Monitor
-    Serial.print("Distance: ");
-    Serial.println(ultraDistance);
+    // Serial.print("Distance: ");
+    // Serial.println(ultraDistance);
   }
 
-  void isObstacleDetected(){
-
-    if(ultraDistance > ULTRA_DISTANCE_WARNING)
-      obstacleDetected = true;
-    else
-      obstacleDetected = false;
-
+  bool isObstacleDetected() {
+    return GetUltraDistance() > ULTRA_DISTANCE_WARNING;
   }
 
-  void changeDirection(){
+  void changeDirection() {
     Vector2 position = getPosition();
 
     float nextX = position.x;
     float nextY = position.y;
     Vector2 nextPosition;
-    if(position.y > 0.0625 && obstacleDetected){
+    if(position.y > 0.0625 && isObstacleDetected()){
       nextY -= MOVE_LEFT_VALUE;
       isObstacleDetected();
       nextPosition = (Vector2){nextX, nextY};
       localMove(nextPosition);
       
-    } else if(position.y < 1.9375 && obstacleDetected){
+    } else if(position.y < 1.9375 && isObstacleDetected()){
       nextY += MOVE_RIGHT_VALUE;
       isObstacleDetected();
       nextPosition = (Vector2){nextX, nextY};
