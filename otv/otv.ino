@@ -3,9 +3,7 @@
 #include "util.h"
 #include "Enes100.h"
 
-// Testing based constant parameters
-#define NUM_OBSTACLE_POSITIONS 6
-const Vector2 obstacleScanPositions[NUM_OBSTACLE_POSITIONS] = { {0, 0}, {0, 0} /*...*/ }; 
+
 
 // different states for control
 // can be reduced or expanded idk
@@ -58,6 +56,7 @@ void loop() {
 
     case NAV_APPROACH:
     // move away from mission zone, face obstacles
+      navigationApproach();
     break;
 
     case NAV_OBSTACLES:
@@ -67,12 +66,21 @@ void loop() {
 
     case NAV_ENTER_ENDZONE:
     // go under the limbo
+      navigateToEndzone();
     break;
   }
 
 }
 
 // precondition: facing obstacles (should be done in nav approach)
+// Testing based constant parameters
+#define NUM_OBSTACLE_POSITIONS 6
+const Vector2 obstacleScanPositions[NUM_OBSTACLE_POSITIONS] =
+  {
+    {1.1f, 1.1f}, {1.1f, 1}, {1.1f, 0.5f},
+    {1.9f, 1.5f}, {1.9f, 1}, {1.9f, 0.5f}
+  }; // set up 0.4m away from center of each obstacle on the x axis
+
 void navigateObstacles() {
 
   bool onSecondRow = false;
@@ -91,4 +99,23 @@ void navigateObstacles() {
 
   state = NAV_ENTER_ENDZONE;
 
+}
+
+
+// asuming not going to hit anything on the way
+const Vector2 obstacleApproachPosition = { 1, 1 };
+
+void navigationApproach() {
+  otv.moveTo(obstacleApproachPosition);// idk if moving to a position is the best way of doing this
+  otv.rotateTo(0); // face the obstacles
+
+  state = NAV_OBSTACLES;
+}
+
+const Vector2 endzoneEntryPosition = { 2.8f, 0.5f };
+const Vector2 endzonePosition = { 3.7f, 0.5f };
+
+void navigateToEndzone() {
+  otv.moveTo(endzoneEntryPosition);
+  otv.moveTo(endzonePosition);
 }
