@@ -11,7 +11,7 @@ struct Vector2 {
 
   Vector2 normalized() {
     float magnitude = this->magnitude();
-    return (Vector2) { x / magnitude, y / magnitude };
+    return { x / magnitude, y / magnitude };
   }
 
   float magnitude() {
@@ -23,7 +23,7 @@ struct Vector2 {
   }
 
   Vector2 rotatedBy(float angle) {
-    return (Vector2) 
+    return
     {
       x * cosf(angle) - y * sinf(angle),
       x * sinf(angle) + y * cosf(angle)
@@ -31,7 +31,11 @@ struct Vector2 {
   }
 
   Vector2 operator - (Vector2 other) {
-    return (Vector2) { x - other.x, y - other.y };
+    return { x - other.x, y - other.y };
+  }
+
+  Vector2 operator + (Vector2 other) {
+    return { x + other.x, y + other.y };
   }
 };
 

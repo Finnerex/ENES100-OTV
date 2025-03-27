@@ -101,7 +101,7 @@ class Drivetrain {
       localMove(nextPosition);
 
     while(!isObstacleDetected())
-      delay(CLOSE_ENOUGH_POLL_MS);
+      delay(20);
     
     stop();
   }

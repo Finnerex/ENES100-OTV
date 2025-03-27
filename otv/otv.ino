@@ -3,10 +3,6 @@
 #include "util.h"
 #include "Enes100.h"
 
-
-
-#define OBSTACLE_X_COORD_CLEARANCE 0.5
-
 // different states for control
 // can be reduced or expanded idk
 enum State {
@@ -77,6 +73,8 @@ void loop() {
 // precondition: facing obstacles (should be done in nav approach)
 // Testing based constant parameters
 #define NUM_OBSTACLE_POSITIONS 6
+#define OBSTACLE_X_COORD_CLEARANCE 0.3
+
 const Vector2 obstacleScanPositions[NUM_OBSTACLE_POSITIONS] =
   {
     {1.1f, 1.1f}, {1.1f, 1}, {1.1f, 0.5f},
@@ -85,28 +83,24 @@ const Vector2 obstacleScanPositions[NUM_OBSTACLE_POSITIONS] =
 
 void navigateObstacles() {
 
-  bool onSecondRow = false;
-
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < NUM_OBSTACLE_POSITIONS / 2; i++) {
     otv.moveTo(obstacleScanPositions[i]);
-    if (!isObstacleDetected()){
+
+    if (!otv.isObstacleDetected()) {
       // move forward
-      Vector2 position = otv.getPosition;
-      float nextY = position.y + OBSTACLE_X_COORD_CLEARANCE;
-      Vector2 nextPosition = (Vector2){position.x, nextY};
-      moveTo(nextPosition);
-      onSecondRow = true;
+      otv.moveTo(otv.getPosition() + (Vector2){ OBSTACLE_X_COORD_CLEARANCE, 0 });
       break;
     }
   }
 
   for(int i = 2; i < NUM_OBSTACLE_POSITIONS; i++){
     otv.moveTo(obstacleScanPositions[i]);
-    if(!isObstacleDetected()){
-      Vector2 position = otv.getPosition;
+
+    if(!otv.isObstacleDetected()) {
+      Vector2 position = otv.getPosition();
       float nextY = position.y + OBSTACLE_X_COORD_CLEARANCE;
       Vector2 nextPosition = (Vector2){position.x, nextY};
-      moveTo(nextPosition);
+      otv.moveTo(nextPosition);
       break;
     }
   }
