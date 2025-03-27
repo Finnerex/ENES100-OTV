@@ -95,6 +95,20 @@ class Drivetrain {
     }
   }
 
+  void moveForward(){
+    Vector2 nextPosition = getPosition();
+    float nextX = nextPosition.x;
+    float nextY = nextPosition.y + MOVE_FORWARD_VALUE;
+    nextPosition = (Vector2){nextX, nextY};
+    if(!isObstacleDetected())
+      localMove(nextPosition);
+
+    while(!isObstacleDetected())
+      delay(CLOSE_ENOUGH_POLL_MS);
+    
+    stop();
+  }
+
   void localMove(Vector2 direction) { // call stop() to stop this guy
   
     direction = direction.normalized();
@@ -148,6 +162,17 @@ class Drivetrain {
     stop();
 
   }
+
+  /*
+  void moveBy(Vector2 position){
+    globalMove(position - getPosition());
+
+    while(!isObstacleDetected())
+      delay(CLOSE_ENOUGH_POLL_MS);
+    
+    stop();
+  }
+  */
 
   void rotateTo(float angle) {
     rotate(normalizeAngle(getRotation() - angle) < (float) M_PI);

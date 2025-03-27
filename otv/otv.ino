@@ -7,6 +7,8 @@
 #define NUM_OBSTACLE_POSITIONS 6
 const Vector2 obstacleScanPositions[NUM_OBSTACLE_POSITIONS] = { {0, 0}, {0, 0} /*...*/ }; 
 
+#define OBSTACLE_X_COORD_CLEARANCE 0.5
+
 // different states for control
 // can be reduced or expanded idk
 enum State {
@@ -77,18 +79,34 @@ void navigateObstacles() {
 
   bool onSecondRow = false;
 
-  for (int i = 0; i < NUM_OBSTACLE_POSITIONS; i++) {
+  for (int i = 0; i < 3; i++) {
     otv.moveTo(obstacleScanPositions[i]);
-    if (true/* see obstacle */) continue;
+    if (!isObstacleDetected()){
+      // move forward
+      Vector2 position = otv.getPosition;
+      float nextY = position.y + OBSTACLE_X_COORD_CLEARANCE;
+      Vector2 nextPosition = (Vector2){position.x, nextY};
+      moveTo(nextPosition);
+      onSecondRow = true;
+      break;
+    }
+  }
 
-    // move forward
-    
-
-    if (onSecondRow) break;
-    onSecondRow = true;
-    i = 2; // second set of object starts at index 3
+  for(int i = 2; i < NUM_OBSTACLE_POSITIONS; i++){
+    otv.moveTo(obstacleScanPositions[i]);
+    if(!isObstacleDetected()){
+      Vector2 position = otv.getPosition;
+      float nextY = position.y + OBSTACLE_X_COORD_CLEARANCE;
+      Vector2 nextPosition = (Vector2){position.x, nextY};
+      moveTo(nextPosition);
+      break;
+    }
   }
 
   state = NAV_ENTER_ENDZONE;
+
+}
+
+void navigateEndzone(){
 
 }
