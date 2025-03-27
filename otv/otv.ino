@@ -38,7 +38,6 @@ void setup() {
 bool sent = false;
 
 void loop() {
-  otv.updateTransform();
 
   switch (state) {
     case MIS_APPROACH:

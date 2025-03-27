@@ -1,5 +1,3 @@
-#include <Math.h>
-#include "Arduino.h"
 #ifndef DRIVETRAIN_H
 #define DRIVETRAIN_H
 
@@ -18,8 +16,6 @@
 
 class Drivetrain {
   
-  Vector2 position;
-  float rotation;
   bool obstacleDetected;
   //Ultrasonic Range Finder pin defines + variables
   const int trigPin = 10;
@@ -38,44 +34,18 @@ class Drivetrain {
   public:
     Drivetrain() {}
 
-  void updateTransform() {
-    // set position & rotation from wifi module / vision system
-    float x, y, t; bool v; // Declare variables to hold the data
-    //Enes100.getX will make sure you get the latest data available to you about your OTV's location.
-    //The first time getX is called, X, Y, theta and visibility are queried and cached.
-    //Subsequent calls return from the cache, so there is no performance gain to saving the function response to a variable.
+  Vector2 getPosition() {
+    while (!Enes100.isVisible())
+      delay(20);
 
-    x = Enes100.getX();  // Your X coordinate! 0-4, in meters, -1 if no aruco is not visibility (but you should use Enes100.isVisible to check that instead)
-    y = Enes100.getY();  // Your Y coordinate! 0-2, in meters, also -1 if your aruco is not visible.
-    t = Enes100.getTheta();  //Your theta! -pi to +pi, in radians, -1 if your aruco is not visible.
-    v = Enes100.isVisible(); // Is your aruco visible? True or False.
+    return { Enes100.getX(), Enes100.getY() };
+  }
 
-    if (v) { // If the ArUco marker is visible
-        Enes100.print(x); // print out the location
-        Enes100.print(",");
-        Enes100.print(y);
-        Enes100.print(",");
-        Enes100.println(t);
-    }
-    else // otherwise
-        Enes100.println("Not visible"); // print not visible
-    
-    //Enes100.mission(LOCATION, 'A'); //This is how you should send the location of the mission site that contains a plantable substrate.
+  float getRotation() {
+    while (!Enes100.isVisible())
+      delay(20);
 
-    position.x = x;
-    position.y = y;
-
-    // updateDistance();
-    
-
-    // if(obstacleDetected)
-    //   changeDirection();
-    // else {
-    //   Vector2 forwardDirection = {x + 0.0010, y};
-    //   localMove(forwardDirection);
-    // }
-
-    // delay(1000);
+    return Enes100.getTheta();
   }
 
   void updateDistance(){
@@ -105,6 +75,8 @@ class Drivetrain {
   }
 
   void changeDirection(){
+    Vector2 position = getPosition();
+
     float nextX = position.x;
     float nextY = position.y;
     Vector2 nextPosition;
@@ -148,7 +120,7 @@ class Drivetrain {
 
   void globalMove(Vector2 direction) {
     // transform direction to otv local space
-    direction = direction.rotatedBy(-rotation);
+    direction = direction.rotatedBy(-getRotation());
     localMove(direction);
   }
 
@@ -164,7 +136,7 @@ class Drivetrain {
     digitalWrite(MOTOR_2_DIR_PIN, reverse ? HIGH : LOW);
     digitalWrite(MOTOR_3_DIR_PIN, reverse ? HIGH : LOW);
 
-    analogWrite(MOTOR_2_PWM_PIN, speed * 255);
+    analogWrite(MOTOR_1_PWM_PIN, speed * 255);
     analogWrite(MOTOR_2_PWM_PIN, speed * 255);
     analogWrite(MOTOR_3_PWM_PIN, speed * 255);
 
@@ -173,7 +145,7 @@ class Drivetrain {
   #define CLOSE_ENOUGH_POLL_MS 20
 
   void moveTo(Vector2 position) {
-    globalMove(position - this->position);
+    globalMove(position - getPosition());
 
     while (!closeEnough(position))
       delay(CLOSE_ENOUGH_POLL_MS);
@@ -183,7 +155,7 @@ class Drivetrain {
   }
 
   void rotateTo(float angle) {
-    rotate(normalizeAngle(rotation - angle) < (float) M_PI);
+    rotate(normalizeAngle(getRotation() - angle) < (float) M_PI);
 
     while (!closeEnough(angle))
       delay(CLOSE_ENOUGH_POLL_MS);
@@ -196,11 +168,11 @@ class Drivetrain {
 
   private:
   bool closeEnough(Vector2 position) {
-    return (position - this->position).sqrMagnitude() <= CLOSE_ENOUGH_SQR_DIST;
+    return (position - getPosition()).sqrMagnitude() <= CLOSE_ENOUGH_SQR_DIST;
   }
 
   bool closeEnough(float angle) {
-    return normalizeAngle(rotation - angle) <= CLOSE_ENOUGH_ANGLE;
+    return normalizeAngle(getRotation() - angle) <= CLOSE_ENOUGH_ANGLE;
   }
 
 };
