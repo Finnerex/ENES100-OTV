@@ -1,3 +1,4 @@
+#include "pins_arduino.h"
 #ifndef DRIVETRAIN_H
 #define DRIVETRAIN_H
 
@@ -10,9 +11,13 @@
 #define MOTOR_2_PWM_PIN 5
 #define MOTOR_3_PWM_PIN 6
 
-#define MOTOR_1_DIR_PIN 0
-#define MOTOR_2_DIR_PIN 1
+#define MOTOR_1_DIR_PIN A4 // A4
+#define MOTOR_2_DIR_PIN 7
 #define MOTOR_3_DIR_PIN 2
+
+#define MOTOR_1_DIR_PIN_2 A5 // A5
+#define MOTOR_2_DIR_PIN_2 A2 // A2
+#define MOTOR_3_DIR_PIN_2 A3 // A3
 
 #define ULTRA_TRIGGER_PIN 10
 #define ULTRA_ECHO_PIN 9
@@ -29,7 +34,21 @@ class Drivetrain {
     float speed;
 
   public:
-    Drivetrain() {}
+    Drivetrain() {
+      pinMode(MOTOR_1_DIR_PIN, OUTPUT);
+      pinMode(MOTOR_2_DIR_PIN, OUTPUT);
+      pinMode(MOTOR_3_DIR_PIN, OUTPUT);
+      pinMode(MOTOR_1_DIR_PIN_2, OUTPUT);
+      pinMode(MOTOR_2_DIR_PIN_2, OUTPUT);
+      pinMode(MOTOR_3_DIR_PIN_2, OUTPUT);
+
+      pinMode(MOTOR_1_PWM_PIN, OUTPUT);
+      pinMode(MOTOR_2_PWM_PIN, OUTPUT);
+      pinMode(MOTOR_3_PWM_PIN, OUTPUT);
+
+      pinMode(ULTRA_ECHO_PIN, INPUT);
+      pinMode(ULTRA_TRIGGER_PIN, OUTPUT);
+    }
 
   Vector2 getPosition() {
     while (!Enes100.isVisible())
@@ -119,10 +138,14 @@ class Drivetrain {
     digitalWrite(MOTOR_2_DIR_PIN, m2Speed > 0 ? LOW : HIGH);
     digitalWrite(MOTOR_3_DIR_PIN, m3Speed > 0 ? LOW : HIGH);
 
+    digitalWrite(MOTOR_1_DIR_PIN_2, m1Speed > 0 ? HIGH : LOW); // assuming HIGH means reverse
+    digitalWrite(MOTOR_2_DIR_PIN_2, m2Speed > 0 ? HIGH : LOW);
+    digitalWrite(MOTOR_3_DIR_PIN_2, m3Speed > 0 ? HIGH : LOW);
+
     analogWrite(MOTOR_1_PWM_PIN, fabsf(m1Speed) * 255); // assuming direction components and thus speed is between -1 and 1
     analogWrite(MOTOR_2_PWM_PIN, fabsf(m2Speed) * 255);
     analogWrite(MOTOR_3_PWM_PIN, fabsf(m3Speed) * 255);
-
+  
   }
 
   void globalMove(Vector2 direction) {
@@ -145,6 +168,10 @@ class Drivetrain {
     digitalWrite(MOTOR_2_DIR_PIN, reverse ? HIGH : LOW);
     digitalWrite(MOTOR_3_DIR_PIN, reverse ? HIGH : LOW);
 
+    digitalWrite(MOTOR_1_DIR_PIN_2, reverse ? LOW : HIGH);
+    digitalWrite(MOTOR_2_DIR_PIN_2, reverse ? LOW : HIGH);
+    digitalWrite(MOTOR_3_DIR_PIN_2, reverse ? LOW : HIGH);
+
     analogWrite(MOTOR_1_PWM_PIN, speed * 255);
     analogWrite(MOTOR_2_PWM_PIN, speed * 255);
     analogWrite(MOTOR_3_PWM_PIN, speed * 255);
@@ -153,12 +180,13 @@ class Drivetrain {
 
   #define CLOSE_ENOUGH_POLL_MS 20
 
-  void moveTo(Vector2 position) {
-    globalMove(position - getPosition());
+  void moveTo(Vector2 targetPosition) {
+    globalMove(targetPosition - getPosition());
 
-    while (!closeEnough(position))
+    while (!closeEnough(targetPosition)){
+      globalMove(targetPosition - getPosition());
       delay(CLOSE_ENOUGH_POLL_MS);
-    
+    }
     stop();
 
   }
@@ -184,7 +212,7 @@ class Drivetrain {
   }
 
   #define CLOSE_ENOUGH_DIST 0.05f // 5cm is kind of large
-  #define CLOSE_ENOUGH_ANGLE (float) M_PI / 32;
+  #define CLOSE_ENOUGH_ANGLE (float) M_PI / 32; // abt 5 degrees
 
   private:
   bool closeEnough(Vector2 position) {
