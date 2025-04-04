@@ -26,25 +26,27 @@ void setup() {
   // Initialize Aruco Wifi
   // Initialize Enes100 Library
   // Team Name, Mission Type, Marker ID, Room Number, Wifi Module TX Pin, Wifi Module RX Pin
-  // Enes100.begin("Teem Slyde", SEED, 205, 1116, A0, A1);
-  // // At this point we know we are connected.
-  // Enes100.println("Connected...");
+  Enes100.begin("Teem Slyde", SEED, 11, 1120, A0, A1);
+  // At this point we know we are connected.
+  Enes100.println("Connected...");
 
+  // Serial.begin(9600);
+  otv.moveTo({2, 1});
+
+  // analogWrite(MOTOR_2_PWM_PIN, 255);
+
+  // digitalWrite(MOTOR_2_DIR_PIN, LOW);
+  // digitalWrite(MOTOR_2_DIR_PIN_2, HIGH);
+
+  // otv.localMove({0, 1});
+  
   
 }
 
 
 void loop() {
 
-  static Vector2 direction = {0, 1};
-
-  otv.localMove(direction);
-
-  delay(600);
-  otv.stop();
-  direction = direction.rotatedBy(M_PI/8);
-  delay(100);
-
+  // otv.globalMove({1, 0});
 
   // switch (state) {
   //   case MIS_APPROACH:

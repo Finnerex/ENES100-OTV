@@ -11,20 +11,20 @@
 #define MOTOR_2_PWM_PIN 5
 #define MOTOR_3_PWM_PIN 6
 
-#define MOTOR_1_DIR_PIN A4 // A4
+#define MOTOR_1_DIR_PIN A4
 #define MOTOR_2_DIR_PIN 7
 #define MOTOR_3_DIR_PIN 2
 
-#define MOTOR_1_DIR_PIN_2 A5 // A5
-#define MOTOR_2_DIR_PIN_2 A2 // A2
-#define MOTOR_3_DIR_PIN_2 A3 // A3
+#define MOTOR_1_DIR_PIN_2 A5
+#define MOTOR_2_DIR_PIN_2 A2
+#define MOTOR_3_DIR_PIN_2 A3
 
 #define ULTRA_TRIGGER_PIN 10
 #define ULTRA_ECHO_PIN 9
 
 class Drivetrain {
   
-  #define ULTRA_DISTANCE_WARNING 40
+  #define ULTRA_DISTANCE_WARNING 10
 
   #define MOVE_FORWARD_VALUE 0.0010
   #define MOVE_LEFT_VALUE 0.0010
@@ -48,18 +48,27 @@ class Drivetrain {
 
       pinMode(ULTRA_ECHO_PIN, INPUT);
       pinMode(ULTRA_TRIGGER_PIN, OUTPUT);
+
+      
     }
 
   Vector2 getPosition() {
     while (!Enes100.isVisible())
-      delay(20);
+      delay(1);
 
-    return { Enes100.getX(), Enes100.getY() };
+    Vector2 pos = { Enes100.getX(), Enes100.getY() };
+
+    Enes100.print("Position : ");
+    Enes100.print(pos.x);
+    Enes100.print(", ");
+    Enes100.println(pos.y);
+
+    return pos;
   }
 
   float getRotation() {
     while (!Enes100.isVisible())
-      delay(20);
+      delay(1);
 
     return Enes100.getTheta();
   }
@@ -74,15 +83,18 @@ class Drivetrain {
     digitalWrite(ULTRA_TRIGGER_PIN, LOW);
     // Reads the echoPin, returns the sound wave travel time in microseconds
     float ultraDuration = pulseIn(ULTRA_ECHO_PIN, HIGH);
-    // Calculating the distance
-    return ultraDuration * 0.034 / 2;
+
     // Prints the distance on the Serial Monitor
     // Serial.print("Distance: ");
-    // Serial.println(ultraDistance);
+    // Serial.println(ultraDuration * 0.034 / 2);
+
+    // Calculating the distance
+    return ultraDuration * 0.034 / 2;
+    
   }
 
   bool isObstacleDetected() {
-    return GetUltraDistance() > ULTRA_DISTANCE_WARNING;
+    return GetUltraDistance() < ULTRA_DISTANCE_WARNING;
   }
 
   void changeDirection() {
@@ -150,7 +162,7 @@ class Drivetrain {
 
   void globalMove(Vector2 direction) {
     // transform direction to otv local space
-    direction = direction.rotatedBy(-getRotation());
+    direction = direction.rotatedBy(-getRotation() + M_PI_2); // X IS THE LONG AXIS
     localMove(direction);
   }
 
@@ -181,14 +193,16 @@ class Drivetrain {
   #define CLOSE_ENOUGH_POLL_MS 20
 
   void moveTo(Vector2 targetPosition) {
-    globalMove(targetPosition - getPosition());
+    // globalMove(targetPosition - getPosition());
 
-    while (!closeEnough(targetPosition)){
+    while (!closeEnough(targetPosition)) {
       globalMove(targetPosition - getPosition());
       delay(CLOSE_ENOUGH_POLL_MS);
+      stop();
+      // delay(CLOSE_ENOUGH_POLL_MS/2);
     }
-    stop();
 
+    stop();
   }
 
   /*
@@ -203,16 +217,22 @@ class Drivetrain {
   */
 
   void rotateTo(float angle) {
-    rotate(fabsf(normalizeAngle(getRotation() - angle)) < (float) M_PI);
+    // rotate(fabsf(normalizeAngle(getRotation() - angle)) > (float) M_PI);
 
     while (!closeEnough(angle))
+    {
+      Enes100.println(normalizeAngle(angle));
+      rotate(fabsf(normalizeAngle(getRotation() - angle)) < 0);
       delay(CLOSE_ENOUGH_POLL_MS);
+      stop();
+      delay(CLOSE_ENOUGH_POLL_MS/2);
+    }
 
     stop();
   }
 
-  #define CLOSE_ENOUGH_DIST 0.05f // 5cm is kind of large
-  #define CLOSE_ENOUGH_ANGLE (float) M_PI / 32; // abt 5 degrees
+  #define CLOSE_ENOUGH_DIST 0.01f // 15cm
+  #define CLOSE_ENOUGH_ANGLE (float) M_PI / 16; // abt 12 degrees
 
   private:
   bool closeEnough(Vector2 position) {
