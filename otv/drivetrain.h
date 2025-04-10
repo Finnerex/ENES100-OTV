@@ -1,10 +1,10 @@
-#include "pins_arduino.h"
 #ifndef DRIVETRAIN_H
 #define DRIVETRAIN_H
 
 #include <math.h>
 #include "util.h"
 #include "Enes100.h"
+#include "pins_arduino.h"
 
 // Motor pin defines
 #define MOTOR_1_PWM_PIN 3
