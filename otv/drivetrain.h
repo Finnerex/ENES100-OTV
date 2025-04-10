@@ -24,7 +24,7 @@
 
 class Drivetrain {
   
-  #define ULTRA_DISTANCE_WARNING 10
+  #define ULTRA_DISTANCE_WARNING 20
 
   #define MOVE_FORWARD_VALUE 0.0010
   #define MOVE_LEFT_VALUE 0.0010
@@ -56,14 +56,7 @@ class Drivetrain {
     while (!Enes100.isVisible())
       delay(1);
 
-    Vector2 pos = { Enes100.getX(), Enes100.getY() };
-
-    Enes100.print("Position : ");
-    Enes100.print(pos.x);
-    Enes100.print(", ");
-    Enes100.println(pos.y);
-
-    return pos;
+    return { Enes100.getX(), Enes100.getY() };
   }
 
   float getRotation() {
@@ -199,7 +192,7 @@ class Drivetrain {
       globalMove(targetPosition - getPosition());
       delay(CLOSE_ENOUGH_POLL_MS);
       stop();
-      // delay(CLOSE_ENOUGH_POLL_MS/2);
+      delay(CLOSE_ENOUGH_POLL_MS/2);
     }
 
     stop();
@@ -221,18 +214,21 @@ class Drivetrain {
 
     while (!closeEnough(angle))
     {
-      Enes100.println(normalizeAngle(angle));
-      rotate(fabsf(normalizeAngle(getRotation() - angle)) < 0);
+      Enes100.print("angle difference: ");
+      Enes100.println(normalizeAngle(getRotation() - angle));
+      Enes100.print("rotation: ");
+      Enes100.println(getRotation());
+      rotate(normalizeAngle(getRotation() - angle, 2 * M_PI) < M_PI);
       delay(CLOSE_ENOUGH_POLL_MS);
       stop();
-      delay(CLOSE_ENOUGH_POLL_MS/2);
+      delay(CLOSE_ENOUGH_POLL_MS);
     }
 
     stop();
   }
 
-  #define CLOSE_ENOUGH_DIST 0.01f // 15cm
-  #define CLOSE_ENOUGH_ANGLE (float) M_PI / 16; // abt 12 degrees
+  #define CLOSE_ENOUGH_DIST 0.05f // 5 cm
+  #define CLOSE_ENOUGH_ANGLE (float) M_PI / 60; // abt 5 degrees
 
   private:
   bool closeEnough(Vector2 position) {

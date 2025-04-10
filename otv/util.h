@@ -39,11 +39,11 @@ struct Vector2 {
   }
 };
 
-float normalizeAngle(float angle) {
-  while (angle > (float) M_PI) 
+float normalizeAngle(float angle, float max = M_PI) {
+  while (angle > (float) max) 
     angle -= (float) 2 * M_PI;
 
-  while (angle < (float) -M_PI)
+  while (angle < (float) max - 2 * M_PI)
     angle += (float) 2 * M_PI;
 
   return angle;

@@ -3,25 +3,11 @@
 #include "util.h"
 #include "Enes100.h"
 
-// different states for control
-// can be reduced or expanded idk
-enum State {
-  MIS_APPROACH,
-  MIS_SEARCH_PLANTABLE,
-  MIS_FOUND_PLANTABLE,
-  MIS_PICKUP_SAMPLE,
-  NAV_APPROACH,
-  NAV_OBSTACLES,
-  NAV_ENTER_ENDZONE
-};
-
-
 // Global Variables
 Drivetrain otv;
-State state = MIS_APPROACH;
 
 void setup() {
-  otv.speed = 1; // for testing, lower total speed
+  otv.speed = 0.9f; // for testing, lower total speed
 
   // Initialize Aruco Wifi
   // Initialize Enes100 Library
@@ -30,113 +16,91 @@ void setup() {
   // At this point we know we are connected.
   Enes100.println("Connected...");
 
-  // Serial.begin(9600);
-  otv.moveTo({2, 1});
+  navigationApproach();
+  delay(1000);
+  navigateObstacles();
+  delay(1000);
+  navigateToEndzone();
 
-  // analogWrite(MOTOR_2_PWM_PIN, 255);
-
-  // digitalWrite(MOTOR_2_DIR_PIN, LOW);
-  // digitalWrite(MOTOR_2_DIR_PIN_2, HIGH);
-
-  // otv.localMove({0, 1});
-  
   
 }
 
 
 void loop() {
 
-  // otv.globalMove({1, 0});
-
-  // switch (state) {
-  //   case MIS_APPROACH:
-  //   // locate where otv is, rotate and move to mission zone
-  //   break;
-
-  //   case MIS_SEARCH_PLANTABLE:
-  //   // search each plot for plantable substrate (orzo) using color sensor
-  //   break;
-
-  //   case MIS_FOUND_PLANTABLE:
-  //   // plant the seed in the plot with plantable substrate
-  //   break;
-
-  //   case MIS_PICKUP_SAMPLE:
-  //   // move to a different plot and get 10g of gravel
-  //   break;
-
-  //   case NAV_APPROACH:
-  //   // move away from mission zone, face obstacles
-  //     navigationApproach();
-  //   break;
-
-  //   case NAV_OBSTACLES:
-  //   // navigate past the obstacles with ultrasonic sensor
-  //     navigateObstacles();
-  //   break;
-
-  //   case NAV_ENTER_ENDZONE:
-  //   // go under the limbo
-  //     navigateToEndzone();
-  //   break;
-  // }
+  DANCE();
 
 }
 
 // precondition: facing obstacles (should be done in nav approach)
 // Testing based constant parameters
 #define NUM_OBSTACLE_POSITIONS 6
-#define OBSTACLE_X_COORD_CLEARANCE 0.3
+#define OBSTACLE_X_COORD_CLEARANCE 0.6
 
 const Vector2 obstacleScanPositions[NUM_OBSTACLE_POSITIONS] =
   {
-    {1.1f, 1.1f}, {1.1f, 1}, {1.1f, 0.5f},
-    {1.9f, 1.5f}, {1.9f, 1}, {1.9f, 0.5f}
+    {0.94f, 1.5f}, {0.94f, 1}, {0.94f, 0.5f},
+    {1.85f, 1.5f}, {1.85f, 1}, {1.85f, 0.5f}
   }; // set up 0.4m away from center of each obstacle on the x axis
 
 void navigateObstacles() {
 
   for (int i = 0; i < NUM_OBSTACLE_POSITIONS / 2; i++) {
     otv.moveTo(obstacleScanPositions[i]);
+    otv.rotateTo(0);
+    delay(1000);
 
     if (!otv.isObstacleDetected()) {
       // move forward
+      Enes100.println("Obstacle not detected, moving forward");
       otv.moveTo(otv.getPosition() + (Vector2){ OBSTACLE_X_COORD_CLEARANCE, 0 });
+      otv.rotateTo(0);
       break;
     }
+    Enes100.println("Obstacle detected, moving to next position");
+
   }
 
-  for(int i = 2; i < NUM_OBSTACLE_POSITIONS; i++){
+  for(int i = 3; i < NUM_OBSTACLE_POSITIONS; i++){
     otv.moveTo(obstacleScanPositions[i]);
+    otv.rotateTo(0);
 
     if(!otv.isObstacleDetected()) {
-      Vector2 position = otv.getPosition();
-      float nextY = position.y + OBSTACLE_X_COORD_CLEARANCE;
-      Vector2 nextPosition = (Vector2){position.x, nextY};
-      otv.moveTo(nextPosition);
+      otv.moveTo(otv.getPosition() + (Vector2){ OBSTACLE_X_COORD_CLEARANCE, 0 });
+      otv.rotateTo(0);
       break;
     }
   }
 
-  state = NAV_ENTER_ENDZONE;
 
 }
 
 
 // asuming not going to hit anything on the way
-const Vector2 obstacleApproachPosition = { 1, 1 };
+const Vector2 obstacleApproachPosition = { 0.9f, 0.98f };
 
 void navigationApproach() {
   otv.moveTo(obstacleApproachPosition);// idk if moving to a position is the best way of doing this
   otv.rotateTo(0); // face the obstacles
 
-  state = NAV_OBSTACLES;
 }
 
-const Vector2 endzoneEntryPosition = { 2.8f, 0.5f };
-const Vector2 endzonePosition = { 3.7f, 0.5f };
+const Vector2 endzoneEntryPosition = { 2.8f, 1.5f };
+// const Vector2 endzonePosition = { 3.7f, 1.5f };
 
 void navigateToEndzone() {
   otv.moveTo(endzoneEntryPosition);
-  otv.moveTo(endzonePosition);
+  // otv.moveTo(endzonePosition);
+  // loses vison system tracking under limbo, so move without using it here
+  otv.rotateTo(0);
+  otv.localMove({1, 0});
+  delay(2000); // value probably needs tweaking
+  otv.stop();
+}
+
+void DANCE() {
+  otv.rotate(true);
+  delay(500);
+  otv.rotate(false);
+  delay(500);
 }
