@@ -1,3 +1,4 @@
+#include "Arduino.h"
 #ifndef DRIVETRAIN_H
 #define DRIVETRAIN_H
 
@@ -22,9 +23,17 @@
 #define ULTRA_TRIGGER_PIN 10
 #define ULTRA_ECHO_PIN 9
 
-class Drivetrain {
+#define CLAW_PWM_PIN 11
+
+#define ARM_EXTEND_PIN 12
+#define ARM_EXTEND_PIN_2 13
+
+class Otv {
   
   #define ULTRA_DISTANCE_WARNING 20
+
+  #define CLAW_OPEN_VALUE 100
+  #define CLAW_CLOSED_VALUE 0
 
   #define MOVE_FORWARD_VALUE 0.0010
   #define MOVE_LEFT_VALUE 0.0010
@@ -34,7 +43,7 @@ class Drivetrain {
     float speed;
 
   public:
-    Drivetrain() {
+    Otv() {
       pinMode(MOTOR_1_DIR_PIN, OUTPUT);
       pinMode(MOTOR_2_DIR_PIN, OUTPUT);
       pinMode(MOTOR_3_DIR_PIN, OUTPUT);
@@ -49,7 +58,10 @@ class Drivetrain {
       pinMode(ULTRA_ECHO_PIN, INPUT);
       pinMode(ULTRA_TRIGGER_PIN, OUTPUT);
 
-      
+      pinMode(CLAW_PWM_PIN, OUTPUT);
+
+      pinMode(ARM_EXTEND_PIN, OUTPUT);
+      pinMode(ARM_EXTEND_PIN_2, OUTPUT);
     }
 
   Vector2 getPosition() {
@@ -84,6 +96,24 @@ class Drivetrain {
     // Calculating the distance
     return ultraDuration * 0.034 / 2;
     
+  }
+
+  void extendArm(bool reverse) {
+    digitalWrite(ARM_EXTEND_PIN, reverse ? HIGH : LOW);
+    digitalWrite(ARM_EXTEND_PIN_2, reverse ? LOW : HIGH);
+  }
+
+  void stopArm() {
+    digitalWrite(ARM_EXTEND_PIN, HIGH);
+    digitalWrite(ARM_EXTEND_PIN_2, HIGH);
+  }
+
+  void openClaw() {
+    analogWrite(CLAW_PWM_PIN, CLAW_OPEN_VALUE);
+  }
+
+  void closeClaw() {
+    analogWrite(CLAW_PWM_PIN, CLAW_CLOSED_VALUE);
   }
 
   bool isObstacleDetected() {

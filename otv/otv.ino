@@ -6,27 +6,28 @@
 #include "SparkFunISL29125.h"
 
 // Global Variables
-Drivetrain otv;
+Otv otv;
 SFE_ISL29125 colorSensor;
 
 void setup() {
   otv.speed = 0.9f; // for testing, lower total speed
 
-  Serial.begin(9600);
+  // Serial.begin(9600);
 
-  if (colorSensor.init())
-    Serial.println("Sensor Initialization Successful\n\r");
-  else
-    Serial.println("It does not work!!!!!!!!!!!!!!!!!!");
+  // if (colorSensor.init())
+  //   Serial.println("Sensor Initialization Successful\n\r");
+  // else
+  //   Serial.println("It does not work!!!!!!!!!!!!!!!!!!");
 
 
   
   // Initialize Aruco Wifi
   // Initialize Enes100 Library
   // Team Name, Mission Type, Marker ID, Room Number, Wifi Module TX Pin, Wifi Module RX Pin
-  // Enes100.begin("Teem Slyde", SEED, 11, 1120, A0, A1);
+  // Enes100.begin("Teem Slyde", SEED, 942, 1120, A0, A1);
   // Enes100.println("Connected...");
 
+  // Entire navigation code
   // navigationApproach();
   // delay(1000);
   // navigateObstacles();
@@ -43,6 +44,13 @@ unsigned int bLow = 2100, bHigh = 5200;
 
 void loop() {
 
+  otv.extendArm(false);
+  delay(4000);
+  otv.extendArm(true);
+  delay(4000);
+
+
+  return; // REMOVE TO TEST COLOR SENSOR
   float red = colorSensor.readRed();
   float green = colorSensor.readGreen();
   float blue = colorSensor.readBlue();
@@ -67,32 +75,9 @@ void loop() {
   Serial.print(", g: "); Serial.print(green);
   Serial.print(", b: "); Serial.println(blue);
 
-  // float rp = red/255;
-  // float gp = green/255;
-  // float bp = blue/255;
-
-  // float Cmax = max(rp, max(gp, bp));
-  // float Cmin = min(rp, min(gp, bp));
-  // float delta = Cmax - Cmin;
-  
-  // float hue;
-  // if (Cmax == rp)
-  //   hue = 60 * ((gp - bp) / delta);
-  // else if (Cmax == gp)
-  //   hue = 60 * (((bp - rp)/delta) + 2);
-  // else if (Cmax == bp)
-  //   hue = 60 * (((rp - gp)/delta) + 4);
-  // else
-  //   hue = -123098;
-
-  // float value = Cmax;
-
-  // Serial.print("hue: "); Serial.print(hue);
-  // Serial.print(", value: "); Serial.println(value);
-
   delay(200);
 
-  // orzo is around 1.05, 1.07, 0.5
+  // orzo is around 1.05, 1.07, 0.5 when brightness normalized
 
   // DANCE();
 
