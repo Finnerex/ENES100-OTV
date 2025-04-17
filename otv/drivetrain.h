@@ -228,6 +228,19 @@ class Otv {
     stop();
   }
 
+  void moveToUntilObstacle(Vector2 targetPosition) {
+    // globalMove(targetPosition - getPosition());
+
+    while (!closeEnough(targetPosition) && !isObstacleDetected(1)) {
+      globalMove(targetPosition - getPosition());
+      delay(CLOSE_ENOUGH_POLL_MS);
+      stop();
+      delay(CLOSE_ENOUGH_POLL_MS/2);
+    }
+
+    stop();
+  }
+
   /*
   void moveBy(Vector2 position){
     globalMove(position - getPosition());
