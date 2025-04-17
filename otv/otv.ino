@@ -29,9 +29,9 @@ void setup() {
 
   // Entire navigation code
   // navigationApproach();
-  // delay(1000);
+  // delay(500);
   // navigateObstacles();
-  // delay(1000);
+  // delay(500);
   // navigateToEndzone();
 
   
@@ -45,9 +45,9 @@ unsigned int bLow = 2100, bHigh = 5200;
 void loop() {
 
   otv.extendArm(false);
-  delay(4000);
+  delay(3500);
   otv.extendArm(true);
-  delay(4000);
+  delay(3500);
 
 
   return; // REMOVE TO TEST COLOR SENSOR
@@ -144,8 +144,8 @@ void navigateToEndzone() {
   // otv.moveTo(endzonePosition);
   // loses vison system tracking under limbo, so move without using it here
   otv.rotateTo(0);
-  otv.localMove({1, 0});
-  delay(2000); // value probably needs tweaking
+  otv.localMove({0, 1});
+  delay(3000); // value probably needs tweaking
   otv.stop();
 }
 

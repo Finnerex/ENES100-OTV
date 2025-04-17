@@ -1,7 +1,7 @@
-#include "Arduino.h"
 #ifndef DRIVETRAIN_H
 #define DRIVETRAIN_H
 
+#include "Arduino.h"
 #include <math.h>
 #include "util.h"
 #include "Enes100.h"
@@ -116,8 +116,8 @@ class Otv {
     analogWrite(CLAW_PWM_PIN, CLAW_CLOSED_VALUE);
   }
 
-  bool isObstacleDetected() {
-    return GetUltraDistance() < ULTRA_DISTANCE_WARNING;
+  bool isObstacleDetected(float distance = ULTRA_DISTANCE_WARNING) {
+    return GetUltraDistance() < distance;
   }
 
   void changeDirection() {
@@ -244,10 +244,6 @@ class Otv {
 
     while (!closeEnough(angle))
     {
-      Enes100.print("angle difference: ");
-      Enes100.println(normalizeAngle(getRotation() - angle));
-      Enes100.print("rotation: ");
-      Enes100.println(getRotation());
       rotate(normalizeAngle(getRotation() - angle, 2 * M_PI) < M_PI);
       delay(CLOSE_ENOUGH_POLL_MS);
       stop();
