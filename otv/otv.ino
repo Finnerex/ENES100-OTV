@@ -149,6 +149,17 @@ void navigateToEndzone() {
   otv.stop();
 }
 
+void approachMissionSite(){
+  bool startAtA = false;
+  if(otv.getPosition().y > 1) startAtA = true; //starting at position A if y coord > 1
+  otv.rotateTo((startAtA ? -1 : 1)*M_PI/2);
+    otv.localMove({otv.getPosition().x, (startAtA ? 0.25 : 1.75)});
+    while(!otv.isObstacleDetected()){
+      delay(1000);
+    }
+    otv.stop();
+}
+
 void DANCE() {
   otv.rotate(true);
   delay(500);
