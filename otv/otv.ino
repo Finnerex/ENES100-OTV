@@ -24,15 +24,17 @@ void setup() {
   // Initialize Aruco Wifi
   // Initialize Enes100 Library
   // Team Name, Mission Type, Marker ID, Room Number, Wifi Module TX Pin, Wifi Module RX Pin
-  // Enes100.begin("Teem Slyde", SEED, 942, 1120, A0, A1);
-  // Enes100.println("Connected...");
+  Enes100.begin("Teem Slyde", SEED, 11, 1120, A0, A1);
+  Enes100.println("Connected...");
 
-  // Entire navigation code
-  // navigationApproach();
-  // delay(500);
-  // navigateObstacles();
-  // delay(500);
-  // navigateToEndzone();
+  //Entire navigation code
+  approachMissionSite();
+  delay(500);
+  navigationApproach();
+  delay(500);
+  navigateObstacles();
+  delay(500);
+  navigateToEndzone();
 
   
 }
@@ -44,24 +46,24 @@ unsigned int bLow = 2100, bHigh = 5200;
 
 void loop() {
 
-  otv.extendArm(false);
-  delay(3500);
-  otv.extendArm(true);
-  delay(3500);
+  // otv.extendArm(false);
+  // delay(3500);
+  // otv.extendArm(true);
+  // delay(3500);
 
 
-  return; // REMOVE TO TEST COLOR SENSOR
-  float red = colorSensor.readRed();
-  float green = colorSensor.readGreen();
-  float blue = colorSensor.readBlue();
+  // return; // REMOVE TO TEST COLOR SENSOR
+  // float red = colorSensor.readRed();
+  // float green = colorSensor.readGreen();
+  // float blue = colorSensor.readBlue();
 
-  red = map(red, rLow, rHigh, 0, 255);
-  green = map(green, gLow, gHigh, 0, 255);
-  blue = map(blue, bLow, bHigh, 0, 255);
+  // red = map(red, rLow, rHigh, 0, 255);
+  // green = map(green, gLow, gHigh, 0, 255);
+  // blue = map(blue, bLow, bHigh, 0, 255);
 
-  red = constrain(red, 0, 255);
-  green = constrain(green, 0, 255);
-  blue = constrain(blue, 0, 255);
+  // red = constrain(red, 0, 255);
+  // green = constrain(green, 0, 255);
+  // blue = constrain(blue, 0, 255);
 
 
   // float brightness = (0.299*red + 0.587*green + 0.114*blue);
@@ -71,11 +73,11 @@ void loop() {
   // blue /= brightness;
   
 
-  Serial.print("r: "); Serial.print(red);
-  Serial.print(", g: "); Serial.print(green);
-  Serial.print(", b: "); Serial.println(blue);
+  // Serial.print("r: "); Serial.print(red);
+  // Serial.print(", g: "); Serial.print(green);
+  // Serial.print(", b: "); Serial.println(blue);
 
-  delay(200);
+  // delay(200);
 
   // orzo is around 1.05, 1.07, 0.5 when brightness normalized
 
@@ -153,10 +155,10 @@ void approachMissionSite(){
   bool startAtA = false;
   if(otv.getPosition().y > 1) startAtA = true; //starting at position A if y coord > 1
   otv.rotateTo((startAtA ? -1 : 1)*M_PI/2);
-    otv.localMove({otv.getPosition().x, (startAtA ? 0.25 : 1.75)});
-    while(!otv.isObstacleDetected()){
-      delay(1000);
-    }
+    otv.moveToUntilObstacle({otv.getPosition().x, (startAtA ? 0.25 : 1.75)});
+    // while(!otv.isObstacleDetected()){
+    //   delay(1000);
+    // }
     otv.stop();
 }
 
