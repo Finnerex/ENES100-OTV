@@ -12,37 +12,35 @@ SFE_ISL29125 colorSensor;
 void setup() {
   otv.speed = 0.9f; // for testing, lower total speed
 
-  // Serial.begin(9600);
+  Serial.begin(9600);
 
-  // if (colorSensor.init())
-  //   Serial.println("Sensor Initialization Successful\n\r");
-  // else
-  //   Serial.println("It does not work!!!!!!!!!!!!!!!!!!");
+  if (colorSensor.init())
+    Serial.println("Sensor Initialization Successful\n\r");
+  else
+    Serial.println("It does not work!!!!!!!!!!!!!!!!!!");
 
 
   
   // Initialize Aruco Wifi
   // Initialize Enes100 Library
   // Team Name, Mission Type, Marker ID, Room Number, Wifi Module TX Pin, Wifi Module RX Pin
-  Enes100.begin("Teem Slyde", SEED, 11, 1120, A0, A1);
-  Enes100.println("Connected...");
+  // Enes100.begin("Teem Slyde", SEED, 11, 1120, A0, A1);
+  // Enes100.println("Connected...");
 
   //Entire navigation code
-  approachMissionSite();
-  delay(500);
-  navigationApproach();
-  delay(500);
-  navigateObstacles();
-  delay(500);
-  navigateToEndzone();
-
+  // approachMissionSite();
+  // delay(500);
+  // navigationApproach();
+  // delay(500);
+  // navigateObstacles();
+  // delay(500);
+  // navigateToEndzone();
   
 }
 
 unsigned int rLow = 600, rHigh = 3600;
 unsigned int gLow = 2300, gHigh = 5700;
 unsigned int bLow = 2100, bHigh = 5200;
-
 
 void loop() {
 
@@ -52,32 +50,32 @@ void loop() {
   // delay(3500);
 
 
-  // return; // REMOVE TO TEST COLOR SENSOR
-  // float red = colorSensor.readRed();
-  // float green = colorSensor.readGreen();
-  // float blue = colorSensor.readBlue();
+  return; // REMOVE TO TEST COLOR SENSOR
+  float red = colorSensor.readRed();
+  float green = colorSensor.readGreen();
+  float blue = colorSensor.readBlue();
 
-  // red = map(red, rLow, rHigh, 0, 255);
-  // green = map(green, gLow, gHigh, 0, 255);
-  // blue = map(blue, bLow, bHigh, 0, 255);
+  red = map(red, rLow, rHigh, 0, 255);
+  green = map(green, gLow, gHigh, 0, 255);
+  blue = map(blue, bLow, bHigh, 0, 255);
 
-  // red = constrain(red, 0, 255);
-  // green = constrain(green, 0, 255);
-  // blue = constrain(blue, 0, 255);
+  red = constrain(red, 0, 255);
+  green = constrain(green, 0, 255);
+  blue = constrain(blue, 0, 255);
 
 
-  // float brightness = (0.299*red + 0.587*green + 0.114*blue);
+  float brightness = (0.299*red + 0.587*green + 0.114*blue);
 
   // red /= brightness;
   // green /= brightness;
   // blue /= brightness;
   
 
-  // Serial.print("r: "); Serial.print(red);
-  // Serial.print(", g: "); Serial.print(green);
-  // Serial.print(", b: "); Serial.println(blue);
+  Serial.print("r: "); Serial.print(red);
+  Serial.print(", g: "); Serial.print(green);
+  Serial.print(", b: "); Serial.println(blue);
 
-  // delay(200);
+  delay(200);
 
   // orzo is around 1.05, 1.07, 0.5 when brightness normalized
 
@@ -167,4 +165,51 @@ void DANCE() {
   delay(500);
   otv.rotate(false);
   delay(500);
+}
+
+#define int static PLOT_INDEX = 0;
+#define float ORZO_TOLERANCE = 90;
+
+void identifySeedPlot(){
+  char[] plotIndexes = {'A', 'B', 'C', 'D'};
+  bool orzoFound = false;
+  char plotChar = 'A';
+  while(!orzoFound){
+    float redValue = detectColor();
+    if(redValue > ORZO_TOLERANCE){
+      orzoFound = true;
+      break;
+    }else{
+      
+    }
+  }
+
+}
+
+int detectColor(){
+  float red;
+  float green;
+  float blue;
+  for(int i=0; i < 8; i++){
+    red = colorSensor.readRed();
+    green = colorSensor.readGreen();
+    blue = colorSensor.readBlue();
+
+    red = map(red, rLow, rHigh, 0, 255);
+    green = map(green, gLow, gHigh, 0, 255);
+    blue = map(blue, bLow, bHigh, 0, 255);
+
+    red = constrain(red, 0, 255);
+    green = constrain(green, 0, 255);
+    blue = constrain(blue, 0, 255);
+
+    float brightness = (0.299*red + 0.587*green + 0.114*blue);
+
+    Serial.print("r: "); Serial.print(red);
+    Serial.print(", g: "); Serial.print(green);
+    Serial.print(", b: "); Serial.println(blue);
+
+    delay(200);
+  }
+  return red;
 }
