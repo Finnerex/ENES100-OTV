@@ -136,14 +136,14 @@ void navigationApproach() {
 
 }
 
-const Vector2 endzoneEntryPosition = { 2.8f, 1.5f };
+const Vector2 endzoneEntryPosition = { 3, 1.5f };
 // const Vector2 endzonePosition = { 3.7f, 1.5f };
 
 void navigateToEndzone() {
   otv.moveTo(endzoneEntryPosition);
   // otv.moveTo(endzonePosition);
   // loses vison system tracking under limbo, so move without using it here
-  otv.rotateTo(0);
+  otv.rotateTo(-0.049);
   otv.localMove({0, 1});
   delay(3000); // value probably needs tweaking
   otv.stop();
@@ -167,11 +167,11 @@ void DANCE() {
   delay(500);
 }
 
-#define int static PLOT_INDEX = 0;
-#define float ORZO_TOLERANCE = 90;
+#define PLOT_INDEX 0
+#define ORZO_TOLERANCE 90
 
 void identifySeedPlot(){
-  char[] plotIndexes = {'A', 'B', 'C', 'D'};
+  char plotIndexes[] = {'A', 'B', 'C', 'D'};
   bool orzoFound = false;
   char plotChar = 'A';
   while(!orzoFound){
