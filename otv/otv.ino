@@ -20,44 +20,43 @@ Servo clawMotor;
 void setup() {
   otv.speed = 0.9f; // for testing, lower total speed
 
-  // clawMotor.write(CLOSE_CLAW));
-  // clawMotor.attach(CLAW_PWM_PIN);
+  Serial.begin(9600);
 
-  // if (colorSensor.init())
-  //   Serial.println("Sensor Initialization Successful\n\r");
-  // else
-  //   Serial.println("It does not work!!!!!!!!!!!!!!!!!!");
+  if (colorSensor.init())
+    Serial.println("Sensor Initialization Successful\n\r");
+  else
+    Serial.println("It does not work!!!!!!!!!!!!!!!!!!");
 
 
+  
   // Initialize Aruco Wifi
   // Initialize Enes100 Library
   // Team Name, Mission Type, Marker ID, Room Number, Wifi Module TX Pin, Wifi Module RX Pin
   Enes100.begin("Teem Slyde", SEED, 11, 1116, A0, A1);
   Enes100.println("Connected...");
 
-  // mission
-  // approachMissionSite();
-  // delay(500);
-
-  // navigation
-  // navigationApproach();
+  // otv.extendArm(true);
+  //Entire navigation code
+  approachMissionSite();
+  delay(1000);
+  identifySeedPlot();
+  // char plot = identifySeedPlot();
+  // Enes100.println(plot);
+  // // navigationApproach();
   // delay(500);
   // navigateObstacles();
   // delay(500);
   // navigateToEndzone();
 
   
-// clawMotor.write(0);
-
-  approachMissionSite();
-
-  // otv.extendArm(false);
-  // delay(3000);
-  // clawMotor.write(CLOSE_CLAW);
-  // delay(5000);
-  // embedSeed();
-
+  // Serial.print("x: ");
+  // Serial.print(otv.getPosition().x);
+  // Serial.print(" y: ");
+  // Serial.print(otv.getPosition().y);
   
+  // float redVal = detectColor();
+  // Enes100.println(redVal);
+
 }
 
 unsigned int rLow = 600, rHigh = 3600;
@@ -145,6 +144,13 @@ void navigateToEndzone() {
   otv.stop();
 }
 
+#define PLOT_INDEX 0
+#define ORZO_TOLERANCE 35
+#define MOVE_BETWEEN_PLOTS 0.083 //3.26772 inches; moves from the middle of one plot to the next
+#define ADJUST_TO_PLOT 0.0415 //moves from middle of mission site to middle of first plot
+
+bool startAtA; //determines the starting position of the robot
+
 void approachMissionSite(){
   bool startAtA = false;
   if(otv.getPosition().y > 1) startAtA = true; //starting at position A if y coord > 1
@@ -156,29 +162,117 @@ void approachMissionSite(){
     otv.stop();
 }
 
-void DANCE() {
-  otv.rotate(true);
-  delay(500);
-  otv.rotate(false);
-  delay(500);
-}
-
-#define PLOT_INDEX 0
-#define ORZO_TOLERANCE 90
-
-void identifySeedPlot(){
+void identifySeedPlot(){ //for mission site B; starts at B
   char plotIndexes[] = {'A', 'B', 'C', 'D'};
   bool orzoFound = false;
-  char plotChar = 'A';
-  while(!orzoFound){
-    float redValue = detectColor();
-    if(redValue > ORZO_TOLERANCE){
-      orzoFound = true;
-      break;
-    }else{
+  char plotChar;
+  if(!startAtA){
+    while(!orzoFound){
+      float redValue = detectColor(); //detects color value of plot B
+      if(redValue > ORZO_TOLERANCE){
+        orzoFound = true;
+        plotChar = 'B';
+        Enes100.print("Plantable substrate found at plot: ");
+        Enes100.println("B");
+        break;
+      }
+
+      otv.moveTo({otv.getPosition().x, otv.getPosition().y + 0.1}); //move back 2 inches
+      otv.moveTo({otv.getPosition().x - MOVE_BETWEEN_PLOTS, otv.getPosition().y-0.05}); //moves to plot C
+      redValue = detectColor(); //detects color value of plot C
+      if(redValue > ORZO_TOLERANCE){
+        orzoFound = true;
+        plotChar = 'C';
+        Enes100.print("Plantable substrate found at plot: ");
+        Enes100.println("C");
+        break;
+      }
+
+      //moves to plot D on the other side of the mission site
+      otv.moveTo({0.04, 0.81});
+      otv.moveTo({0.04, 0.1});
+      otv.moveTo({0.34 - MOVE_BETWEEN_PLOTS-0.02, 0.1}); //middle of other side - displacement
+      otv.rotateTo(1); //rotate to face mission site
+      otv.moveToUntilObstacle({0.34 - MOVE_BETWEEN_PLOTS, 0.5}); //get closer to mission site
+
+      redValue = detectColor(); //detects the color value of plot D
+      Enes100.println(redValue);
+      if(redValue > ORZO_TOLERANCE){
+        orzoFound = true;
+        plotChar = 'D';
+        Enes100.print("Plantable substrate found at plot: ");
+        Enes100.println("D");
+        break;
+      }
       
+      otv.moveTo({otv.getPosition().x, otv.getPosition().y - 0.0508});
+      otv.moveTo({otv.getPosition().x + MOVE_BETWEEN_PLOTS, otv.getPosition().y}); //moves to plot A
+      redValue = detectColor(); //detects color value of plot A
+      Enes100.println(redValue);
+      if(redValue > ORZO_TOLERANCE){
+        orzoFound = true;
+        plotChar = 'A';
+        Enes100.print("Plantable substrate found at plot: ");
+        Enes100.println("A");
+        break;
+      }
+
+      //create: move back to plot A if not detected; will start the process again
     }
-  }
+  } else{ //if mission site is at site A
+      while(!orzoFound){
+        float redValue = detectColor(); //detects color value of plot B
+        if(redValue > ORZO_TOLERANCE){
+          orzoFound = true;
+          plotChar = "A";
+          Enes100.print("Plantable substrate found at plot: ");
+          Enes100.println("A");
+          break;
+        }
+
+        otv.moveTo({otv.getPosition().x - MOVE_BETWEEN_PLOTS, otv.getPosition().y}); //moves to plot C
+        redValue = detectColor(); //detects color value of plot C
+        if(redValue > ORZO_TOLERANCE){
+          orzoFound = true;
+          plotChar = "D";
+          Enes100.print("Plantable substrate found at plot: ");
+          Enes100.println("D");
+          break;
+        }
+
+        //moves to plot D on the other side of the mission site
+        otv.moveTo({0.65, 1.24}); //moves to S1 //change coordinates
+        otv.moveTo({0.65, 1.92}); //moves to S2 //change coordinates
+        otv.moveTo({0.65 - MOVE_BETWEEN_PLOTS, 1.92}); //middle of other side - displacement //change coordinates
+        otv.rotateTo(1); //rotate to face mission site
+        otv.moveToUntilObstacle({0.65 - MOVE_BETWEEN_PLOTS, 0.5}); //get closer to mission site //change coordinates
+
+        redValue = detectColor(); //detects the color value of plot D
+        if(redValue > ORZO_TOLERANCE){
+          orzoFound = true;
+          plotChar = "C";
+          Enes100.print("Plantable substrate found at plot: ");
+          Enes100.println("C");
+          break;
+        }
+        
+        otv.moveTo({otv.getPosition().x + MOVE_BETWEEN_PLOTS, otv.getPosition().y}); //moves to plot A
+        redValue = detectColor(); //detects color value of plot D
+        if(redValue > ORZO_TOLERANCE){
+          orzoFound = true;
+          plotChar = "B";
+          Enes100.print("Plantable substrate found at plot: ");
+          Enes100.println("B");
+          break;
+        }
+
+        //create: move back to plot A if not detected; will start the process again
+      }
+    }
+  
+  
+  
+  delay(500);
 
 }
 
@@ -198,8 +292,12 @@ int detectColor(){
     red = constrain(red, 0, 255);
     green = constrain(green, 0, 255);
     blue = constrain(blue, 0, 255);
-
+    
     float brightness = (0.299*red + 0.587*green + 0.114*blue);
+
+    // red /= brightness;
+    // green /= brightness;
+    // blue /=brightness;
 
     Serial.print("r: "); Serial.print(red);
     Serial.print(", g: "); Serial.print(green);
@@ -210,33 +308,9 @@ int detectColor(){
   return red;
 }
 
-// should be over orzo before this is called
-// assuming reverse: true -> down
-void embedSeed() {
-  otv.extendArm(true);
-  delay(3500);
-  otv.stopArm();
-  // otv.openClaw();
-  clawMotor.write(OPEN_CLAW);
-  delay(1000);
-  otv.extendArm(false);
-  delay(2000);
-  // otv.closeClaw();
-  // clawMotor.write(CLOSE_CLAW);
-  delay(1000);
-  otv.stopArm();
-}
-
-// should be over rocks
-void collectSample() {
-  // otv.openClaw();
-  clawMotor.write(OPEN_CLAW);
+void DANCE() {
+  otv.rotate(true);
   delay(500);
-  otv.extendArm(true);
-  delay(3500);
-  // otv.closeClaw();
-  clawMotor.write(CLOSE_CLAW);
-  delay(1000);
-  otv.extendArm(false);
-  delay(3500);
+  otv.rotate(false);
+  delay(500);
 }

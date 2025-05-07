@@ -259,7 +259,7 @@ class Otv {
   void moveToUntilObstacle(Vector2 targetPosition) {
     // globalMove(targetPosition - getPosition());
 
-    while (!closeEnough(targetPosition) && !isObstacleDetected(10)) {
+    while (!closeEnough(targetPosition) && !isObstacleDetected(3)) {
       globalMove(targetPosition - getPosition());
       delay(CLOSE_ENOUGH_POLL_MS);
       stop();
