@@ -37,9 +37,9 @@ void setup() {
 
   // otv.extendArm(true);
   //Entire navigation code
-  approachMissionSite();
-  delay(1000);
-  identifySeedPlot();
+  // approachMissionSite();
+  // delay(1000);
+  // identifySeedPlot();
   // char plot = identifySeedPlot();
   // Enes100.println(plot);
   // // navigationApproach();
@@ -49,10 +49,10 @@ void setup() {
   // navigateToEndzone();
 
   
-  // Serial.print("x: ");
-  // Serial.print(otv.getPosition().x);
-  // Serial.print(" y: ");
-  // Serial.print(otv.getPosition().y);
+  Enes100.print("x: ");
+  Enes100.print(otv.getPosition().x);
+  Enes100.print(" y: ");
+  Enes100.print(otv.getPosition().y);
   
   // float redVal = detectColor();
   // Enes100.println(redVal);
@@ -167,7 +167,7 @@ void identifySeedPlot(){ //for mission site B; starts at B
   bool orzoFound = false;
   char plotChar;
   if(!startAtA){
-    while(!orzoFound){
+    while(true){
       float redValue = detectColor(); //detects color value of plot B
       if(redValue > ORZO_TOLERANCE){
         orzoFound = true;
@@ -185,6 +185,7 @@ void identifySeedPlot(){ //for mission site B; starts at B
         plotChar = 'C';
         Enes100.print("Plantable substrate found at plot: ");
         Enes100.println("C");
+
         break;
       }
 
@@ -192,9 +193,9 @@ void identifySeedPlot(){ //for mission site B; starts at B
       otv.moveTo({0.04, 0.81});
       otv.moveTo({0.04, 0.1});
       otv.moveTo({0.34 - MOVE_BETWEEN_PLOTS-0.02, 0.1}); //middle of other side - displacement
-      otv.rotateTo(1); //rotate to face mission site
+      //otv.rotateTo(1); //rotate to face mission site
+      otv.rotateTo(M_PI/2);
       otv.moveToUntilObstacle({0.34 - MOVE_BETWEEN_PLOTS, 0.5}); //get closer to mission site
-
       redValue = detectColor(); //detects the color value of plot D
       Enes100.println(redValue);
       if(redValue > ORZO_TOLERANCE){
@@ -217,7 +218,12 @@ void identifySeedPlot(){ //for mission site B; starts at B
         break;
       }
 
-      //create: move back to plot A if not detected; will start the process again
+      //moves to plot B on the other side of the mission site
+      otv.moveTo({0.69, 0.07});
+      otv.moveTo({0.69, 0.84});
+      otv.moveTo({0.69, 0.76}); //first plot
+      otv.rotateTo(-M_PI/2); //rotate to face mission site
+      otv.moveToUntilObstacle({0.64, 0.05}); //get closer to mission site
     }
   } else{ //if mission site is at site A
       while(!orzoFound){
