@@ -286,7 +286,9 @@ class Otv {
 
     while (!closeEnough(angle))
     {
-      rotate(normalizeAngle(getRotation() - angle, 2 * M_PI) < M_PI);
+      float dif = fabsf(normalizeAngle(getRotation() - angle, 2*M_PI));
+      
+      rotate(min(2*M_PI - dif, dif) < M_PI);
       delay(CLOSE_ENOUGH_POLL_MS);
       stop();
       delay(CLOSE_ENOUGH_POLL_MS);
@@ -297,7 +299,7 @@ class Otv {
 
   // the distance/angle for which the otv will stop trying to get closer to the desired position/orientation
   #define CLOSE_ENOUGH_DIST 0.05f // 5 cm
-  #define CLOSE_ENOUGH_ANGLE (float) M_PI / 60; // abt 3 degrees
+  #define CLOSE_ENOUGH_ANGLE (float) M_PI / 50; 
 
   // return if the otv is within defined thresholds of a given position/orientation
   private:
@@ -306,7 +308,8 @@ class Otv {
   }
 
   bool closeEnough(float angle) {
-    return fabsf(normalizeAngle(getRotation() - angle)) <= CLOSE_ENOUGH_ANGLE;
+    float dif = fabsf(normalizeAngle(getRotation() - angle, 2*M_PI));
+    return min(M_PI*2 - dif, dif) <= CLOSE_ENOUGH_ANGLE;
   }
 
 };

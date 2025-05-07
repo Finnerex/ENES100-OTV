@@ -22,15 +22,15 @@ void setup() {
 
   // Serial.begin(9600);
 
-  clawMotor.write(CLOSE_CLAW));
-  clawMotor.attach(CLAW_PWM_PIN);
+  // clawMotor.write(CLOSE_CLAW);
+  // clawMotor.attach(CLAW_PWM_PIN);
 
-  if (colorSensor.init())
-    Serial.println("Sensor Initialization Successful\n\r");
-  else
-    Serial.println("It does not work!!!!!!!!!!!!!!!!!!");
+  // if (colorSensor.init())
+  //   Serial.println("Sensor Initialization Successful\n\r");
+  // else
+  //   Serial.println("It does not work!!!!!!!!!!!!!!!!!!");
 
-
+  
   
   // Initialize Aruco Wifi
   // Initialize Enes100 Library
@@ -38,11 +38,19 @@ void setup() {
   Enes100.begin("Teem Slyde", SEED, 11, 1116, A0, A1);
   Enes100.println("Connected...");
 
+  otv.rotateTo(M_PI);
+  delay(1000);
+  otv.rotate(M_PI/ 2);
+  delay(1000);
+  otv.rotate(-M_PI/ 2);
+  delay(1000);
+  otv.rotate(0);
+
   // otv.extendArm(true);
   //Entire navigation code
-  approachMissionSite();
-  delay(1000);
-  identifySeedPlot();
+  // approachMissionSite();
+  // delay(1000);
+  // identifySeedPlot();
   // char plot = identifySeedPlot();
   // Enes100.println(plot);
   // // navigationApproach();
@@ -158,7 +166,7 @@ void approachMissionSite(){
   bool startAtA = false;
   if(otv.getPosition().y > 1) startAtA = true; //starting at position A if y coord > 1
   otv.rotateTo((startAtA ? -1 : 1)*M_PI/2);
-    otv.moveToUntilObstacle({otv.getPosition().x, (startAtA ? 0.25 : 1.75)});
+    otv.moveToUntilObstacle({0.69, (startAtA ? 0.25 : 1.75)});
     // while(!otv.isObstacleDetected()){
     //   delay(1000);
     // }
@@ -244,9 +252,14 @@ void identifySeedPlot(){ //for mission site B; starts at B
       otv.moveTo({0.69, 0.76}); //first plot
       otv.rotateTo(-M_PI/2); //rotate to face mission site
       otv.moveToUntilObstacle({0.64, 0.05}); //get closer to mission site
+
+      if (orzoFound) {
+        collectSample();
+        break;
+      }
     }
   } else{ //if mission site is at site A
-      while(!orzoFound){
+      while(true){
         float redValue = detectColor(); //detects color value of plot B
         if(redValue > ORZO_TOLERANCE){
           orzoFound = true;
