@@ -20,7 +20,10 @@ Servo clawMotor;
 void setup() {
   otv.speed = 0.9f; // for testing, lower total speed
 
-  Serial.begin(9600);
+  // Serial.begin(9600);
+
+  // clawMotor.write(CLOSE_CLAW));
+  // clawMotor.attach(CLAW_PWM_PIN);
 
   if (colorSensor.init())
     Serial.println("Sensor Initialization Successful\n\r");
@@ -37,9 +40,9 @@ void setup() {
 
   // otv.extendArm(true);
   //Entire navigation code
-  approachMissionSite();
-  delay(1000);
-  identifySeedPlot();
+  // approachMissionSite();
+  // delay(1000);
+  // identifySeedPlot();
   // char plot = identifySeedPlot();
   // Enes100.println(plot);
   // // navigationApproach();
@@ -54,8 +57,8 @@ void setup() {
   // Serial.print(" y: ");
   // Serial.print(otv.getPosition().y);
   
-  // float redVal = detectColor();
-  // Enes100.println(redVal);
+  float redVal = detectColor();
+  Enes100.println(redVal);
 
 }
 
@@ -224,7 +227,6 @@ void identifySeedPlot(){ //for mission site B; starts at B
         float redValue = detectColor(); //detects color value of plot B
         if(redValue > ORZO_TOLERANCE){
           orzoFound = true;
-          plotChar = "A";
           Enes100.print("Plantable substrate found at plot: ");
           Enes100.println("A");
           break;
@@ -234,7 +236,6 @@ void identifySeedPlot(){ //for mission site B; starts at B
         redValue = detectColor(); //detects color value of plot C
         if(redValue > ORZO_TOLERANCE){
           orzoFound = true;
-          plotChar = "D";
           Enes100.print("Plantable substrate found at plot: ");
           Enes100.println("D");
           break;
@@ -250,7 +251,6 @@ void identifySeedPlot(){ //for mission site B; starts at B
         redValue = detectColor(); //detects the color value of plot D
         if(redValue > ORZO_TOLERANCE){
           orzoFound = true;
-          plotChar = "C";
           Enes100.print("Plantable substrate found at plot: ");
           Enes100.println("C");
           break;
@@ -260,7 +260,6 @@ void identifySeedPlot(){ //for mission site B; starts at B
         redValue = detectColor(); //detects color value of plot D
         if(redValue > ORZO_TOLERANCE){
           orzoFound = true;
-          plotChar = "B";
           Enes100.print("Plantable substrate found at plot: ");
           Enes100.println("B");
           break;
@@ -313,4 +312,35 @@ void DANCE() {
   delay(500);
   otv.rotate(false);
   delay(500);
+}
+
+// should be over orzo before this is called
+// assuming reverse: true -> down
+void embedSeed() {
+  otv.extendArm(true);
+  delay(3500);
+  otv.stopArm();
+  // otv.openClaw();
+  clawMotor.write(OPEN_CLAW);
+  delay(1000);
+  otv.extendArm(false);
+  delay(2000);
+  // otv.closeClaw();
+  // clawMotor.write(CLOSE_CLAW);
+  delay(1000);
+  otv.stopArm();
+}
+
+// should be over rocks
+void collectSample() {
+  // otv.openClaw();
+  clawMotor.write(OPEN_CLAW);
+  delay(500);
+  otv.extendArm(true);
+  delay(3500);
+  // otv.closeClaw();
+  clawMotor.write(CLOSE_CLAW);
+  delay(1000);
+  otv.extendArm(false);
+  delay(3500);
 }
