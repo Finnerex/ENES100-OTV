@@ -4,37 +4,59 @@
 #include "util.h"
 #include "Enes100.h"
 #include "SparkFunISL29125.h"
+#include <Servo.h>  
+
+
 
 // Global Variables
 Otv otv;
 SFE_ISL29125 colorSensor;
 
+Servo clawMotor;
+
+#define CLOSE_CLAW 50
+#define OPEN_CLAW 10
+
 void setup() {
   otv.speed = 0.9f; // for testing, lower total speed
 
-  Serial.begin(9600);
+  // clawMotor.write(CLOSE_CLAW));
+  // clawMotor.attach(CLAW_PWM_PIN);
 
-  if (colorSensor.init())
-    Serial.println("Sensor Initialization Successful\n\r");
-  else
-    Serial.println("It does not work!!!!!!!!!!!!!!!!!!");
+  // if (colorSensor.init())
+  //   Serial.println("Sensor Initialization Successful\n\r");
+  // else
+  //   Serial.println("It does not work!!!!!!!!!!!!!!!!!!");
 
 
-  
   // Initialize Aruco Wifi
   // Initialize Enes100 Library
   // Team Name, Mission Type, Marker ID, Room Number, Wifi Module TX Pin, Wifi Module RX Pin
-  // Enes100.begin("Teem Slyde", SEED, 11, 1120, A0, A1);
-  // Enes100.println("Connected...");
+  Enes100.begin("Teem Slyde", SEED, 11, 1116, A0, A1);
+  Enes100.println("Connected...");
 
-  //Entire navigation code
+  // mission
   // approachMissionSite();
   // delay(500);
+
+  // navigation
   // navigationApproach();
   // delay(500);
   // navigateObstacles();
   // delay(500);
   // navigateToEndzone();
+
+  
+// clawMotor.write(0);
+
+  approachMissionSite();
+
+  // otv.extendArm(false);
+  // delay(3000);
+  // clawMotor.write(CLOSE_CLAW);
+  // delay(5000);
+  // embedSeed();
+
   
 }
 
@@ -48,36 +70,6 @@ void loop() {
   // delay(3500);
   // otv.extendArm(true);
   // delay(3500);
-
-
-  return; // REMOVE TO TEST COLOR SENSOR
-  float red = colorSensor.readRed();
-  float green = colorSensor.readGreen();
-  float blue = colorSensor.readBlue();
-
-  red = map(red, rLow, rHigh, 0, 255);
-  green = map(green, gLow, gHigh, 0, 255);
-  blue = map(blue, bLow, bHigh, 0, 255);
-
-  red = constrain(red, 0, 255);
-  green = constrain(green, 0, 255);
-  blue = constrain(blue, 0, 255);
-
-
-  float brightness = (0.299*red + 0.587*green + 0.114*blue);
-
-  // red /= brightness;
-  // green /= brightness;
-  // blue /= brightness;
-  
-
-  Serial.print("r: "); Serial.print(red);
-  Serial.print(", g: "); Serial.print(green);
-  Serial.print(", b: "); Serial.println(blue);
-
-  delay(200);
-
-  // orzo is around 1.05, 1.07, 0.5 when brightness normalized
 
   // DANCE();
 
@@ -136,16 +128,20 @@ void navigationApproach() {
 
 }
 
-const Vector2 endzoneEntryPosition = { 3, 1.5f };
+const Vector2 endzoneEntryPosition = { 3.2f, 1.5f };
 // const Vector2 endzonePosition = { 3.7f, 1.5f };
 
 void navigateToEndzone() {
   otv.moveTo(endzoneEntryPosition);
+  otv.rotateTo(0);
+  otv.moveTo(endzoneEntryPosition);
+
+
   // otv.moveTo(endzonePosition);
   // loses vison system tracking under limbo, so move without using it here
-  otv.rotateTo(-0.049);
   otv.localMove({0, 1});
-  delay(3000); // value probably needs tweaking
+  
+  delay(3200); // value probably needs tweaking
   otv.stop();
 }
 
@@ -212,4 +208,35 @@ int detectColor(){
     delay(200);
   }
   return red;
+}
+
+// should be over orzo before this is called
+// assuming reverse: true -> down
+void embedSeed() {
+  otv.extendArm(true);
+  delay(3500);
+  otv.stopArm();
+  // otv.openClaw();
+  clawMotor.write(OPEN_CLAW);
+  delay(1000);
+  otv.extendArm(false);
+  delay(2000);
+  // otv.closeClaw();
+  // clawMotor.write(CLOSE_CLAW);
+  delay(1000);
+  otv.stopArm();
+}
+
+// should be over rocks
+void collectSample() {
+  // otv.openClaw();
+  clawMotor.write(OPEN_CLAW);
+  delay(500);
+  otv.extendArm(true);
+  delay(3500);
+  // otv.closeClaw();
+  clawMotor.write(CLOSE_CLAW);
+  delay(1000);
+  otv.extendArm(false);
+  delay(3500);
 }
